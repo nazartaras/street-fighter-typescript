@@ -9,7 +9,7 @@ class App {
     static rootElement = document.getElementById('root') as HTMLDivElement;
     static loadingElement = document.getElementById('loading-overlay') as HTMLDivElement;
   
-    async startApp() {
+    private async startApp() {
       try {
         App.loadingElement.style.visibility = 'visible';
         const fighters = await fighterService.getFighters();

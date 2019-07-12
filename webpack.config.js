@@ -20,6 +20,7 @@ module.exports = {
         loaders: [
             { test: /\.tsx?$/, loader: 'ts-loader' },
             { test: /\.html$/, loader: "html" },
+            { test: /\.css$/, loader: 'css-loader'}
         ]
     },
     devServer: {

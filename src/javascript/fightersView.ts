@@ -1,13 +1,14 @@
 import View from './view';
-  import FighterView from './fighterView';
+  import FighterView, {IFighterUndetailed} from './fighterView';
   import { fighterService } from './services/fighterService';
   import {Fighter, IFighter} from './fighter'
 import App from './app';
-
+import {fight} from './fight'
 
 class FightersView extends View {
-    handleClick: (event:EventTarget, fighter:{_id:number, name:string, source: string}) => void; 
-  constructor(fighters:Array<{_id:number, name:string, source: string}>) {
+  element!: any;
+  handleClick: (event:EventTarget, fighter:IFighterUndetailed) => void;     
+  constructor(fighters:Array<IFighterUndetailed>) {
     super();
     
     this.handleClick = this.handleFighterClick.bind(this);
@@ -15,10 +16,10 @@ class FightersView extends View {
   }
   rootElement = document.getElementById('root') as HTMLDivElement;
   fightersDetailsMap = new Map();
-  selectedFighters : Array<IFighter> = [];
+  selectedFighters : Array<IFighter>= [];
 
 
-  createFighters(fighters:Array<{_id:number, name:string, source: string}>) {
+  private createFighters(fighters:Array<IFighterUndetailed>):void {
     const fighterElements = fighters.map(fighter => {
       const fighterView = new FighterView(fighter, this.handleClick);
       return fighterView.element;
@@ -28,7 +29,7 @@ class FightersView extends View {
     this.element.append(...fighterElements);
   }
 
-  async handleFighterClick(event: EventTarget, fighter:{_id:number, name:string, source: string}) {
+  private async handleFighterClick(event: EventTarget, fighter:IFighterUndetailed) {
     let fightersViewHtml = document.getElementById('fighters-container') as HTMLDivElement;
     fightersViewHtml.style.display = 'none';
     if(this.fightersDetailsMap.has(fighter._id)){
@@ -38,13 +39,12 @@ class FightersView extends View {
     const fighterDetails = await fighterService.getFighterDetails(fighter._id);
     this.fightersDetailsMap.set(fighter._id, fighterDetails);
     this.appendStats(fighter._id);
-    console.log(this.fightersDetailsMap);
       }
     // get from map or load info and add to fightersMap
     // show modal with fighter info
     // allow to edit health and power in this modal
   } 
-  appendStats(_id:number):void{
+  private appendStats(_id:number):void{
     const stats = this.createStats(_id);
     this.rootElement.insertBefore(stats, this.rootElement.firstChild);
     let statusFightName = document.getElementById('statusFightName') as HTMLDivElement;
@@ -64,7 +64,7 @@ class FightersView extends View {
     }
     btnSelect.onclick = ()=>{
       this.changeStats(_id);
-      const heroForFight = new Fighter(this.fightersDetailsMap.get(_id));
+      const heroForFight: IFighter = new Fighter(this.fightersDetailsMap.get(_id));
       this.selectedFighters.push(heroForFight);
       if(this.selectedFighters.length==2){
         this.createBattlefield(this.selectedFighters[0],this.selectedFighters[1]);
@@ -72,7 +72,7 @@ class FightersView extends View {
       }
     }
   }
-  changeStats(_id:number):void{
+  private changeStats(_id:number):void{
     let fightersViewHtml = document.getElementById('fighters-container') as HTMLDivElement;
     const child = document.getElementById('stats') as HTMLDivElement; 
     let defInput = document.getElementById('def') as HTMLInputElement;
@@ -85,7 +85,7 @@ class FightersView extends View {
     fightersViewHtml.style.display = 'flex';
   }
   
-  createStats(_id:number):HTMLDivElement{
+  private createStats(_id:number):HTMLDivElement{
     const attributes = {id: "stats"}
     const defense = this.createDef();
     const gif = this.createGif(this.fightersDetailsMap.get(_id).source);
@@ -104,7 +104,7 @@ class FightersView extends View {
  
    return stats;
    }
-   createFigterName():HTMLDivElement{
+   private createFigterName():HTMLDivElement{
    const attributes = {id: 'statusFightName'}
    const fighterName = this.createElement({
      tagName: 'div',
@@ -113,7 +113,7 @@ class FightersView extends View {
    })
    return fighterName;
    }
-   createGif(source:string):HTMLImageElement {
+   private createGif(source:string):HTMLImageElement {
     const attributes = { src: source };
     const imgElement = this.createElement({
       tagName: 'img',
@@ -123,7 +123,7 @@ class FightersView extends View {
 
     return imgElement;
   }
-   createDef():HTMLInputElement{
+  private createDef():HTMLInputElement{
     const attributes = {value : "10",id:'def', title: "defense stat"}
     const defStat = this.createElement({
      tagName: 'input',
@@ -132,7 +132,7 @@ class FightersView extends View {
    });
    return defStat;
    }
-   createAtc():HTMLInputElement{
+   private createAtc():HTMLInputElement{
     const attributes = {value : "10", id: "atc" , title: "attack stat"}
     const atcStat = this.createElement({
       tagName: 'input',
@@ -141,7 +141,7 @@ class FightersView extends View {
     });
     return atcStat;
    }
-   createHp():HTMLInputElement{
+   private createHp():HTMLInputElement{
     const attributes = {value : "10", id: "hp", title: "health stat"}
     const hpStat = this.createElement({
       tagName: 'input',
@@ -150,7 +150,7 @@ class FightersView extends View {
     });
     return hpStat;
    }
-   createOkButton():HTMLButtonElement{
+   private createOkButton():HTMLButtonElement{
     const attributes = {value : "10", id: "btnOK"}
     const okBtn = this.createElement({
       tagName:'button',
@@ -160,7 +160,7 @@ class FightersView extends View {
 
     return okBtn;
    }
-   createSelectButton():HTMLButtonElement{
+   private createSelectButton():HTMLButtonElement{
     const attributes = {value : "10", id: "btnSelect"}
     const selectBtn = this.createElement({
       tagName:'button',
@@ -170,7 +170,7 @@ class FightersView extends View {
 
     return selectBtn;
    }
-   createBattlefield(hero1:IFighter, hero2:IFighter){
+   private createBattlefield(hero1:IFighter, hero2:IFighter){
      let j = 0;
      let lengthFighters = document.getElementsByClassName('fighter').length;
     for(let i=0; i<lengthFighters; i++){
@@ -196,7 +196,7 @@ class FightersView extends View {
      new App();
    };
 }
-createHealthBar(fighter:IFighter): HTMLProgressElement{
+private createHealthBar(fighter:IFighter): HTMLProgressElement{
   const attributes = {value : fighter.health, max: fighter.health}
     const hpStat = this.createElement({
       tagName: 'progress',
@@ -205,7 +205,7 @@ createHealthBar(fighter:IFighter): HTMLProgressElement{
     });
     return hpStat;
 }
-createWinnerText():HTMLHeadingElement{
+private createWinnerText():HTMLHeadingElement{
   const winnerText = this.createElement({
       tagName: 'h1',
       className: 'winner-text',
@@ -213,7 +213,7 @@ createWinnerText():HTMLHeadingElement{
     });
     return winnerText;
  }
-createRestoreToDefaultButton():HTMLButtonElement{
+ private createRestoreToDefaultButton():HTMLButtonElement{
   const attributes = {id: "btnBack"}
     const backBtn = this.createElement({
       tagName:'button',
@@ -223,63 +223,11 @@ createRestoreToDefaultButton():HTMLButtonElement{
 
     return backBtn;
 }
-runFight(hero1:IFighter, hero2:IFighter){
+private runFight(hero1:IFighter, hero2:IFighter){
      
   setInterval(fight, 1000, hero1, hero2);
 }
 
-}
-function fight(hero1:IFighter, hero2:IFighter){
-  let heroHitPower1;
-  let heroHitPower2;
-  let heroDefensePower1;
-  let heroDefensePower2;
-  let fighterOneProgressBar = document.getElementsByClassName('fighter')[0].children[0] as HTMLProgressElement;
-  let fighterSecondProgressBar =  document.getElementsByClassName('fighter')[1].children[0] as HTMLProgressElement;
-    heroDefensePower1 = hero1.getBlockPower();
-    heroDefensePower2 = hero2.getBlockPower();
-    heroHitPower1 =  hero1.getHitPower();
-    heroHitPower2 =  hero2.getHitPower();
-    if(heroHitPower1>heroDefensePower2){
-      hero2.health -= heroHitPower1 - heroDefensePower2;
-      if(document.getElementsByClassName('fighter')[1].children[2].innerHTML==hero2.name)
-      fighterSecondProgressBar.value = hero2.health;
-      else
-      fighterOneProgressBar.value = hero2.health;
-      console.log(hero2.name+" : "+hero2.health);
-  }
-      if(hero2.health>0 && heroHitPower2>heroDefensePower1){
-          hero1.health -= heroHitPower2 - heroDefensePower1;
-          if(document.getElementsByClassName('fighter')[1].children[2].innerHTML==hero1.name)
-          fighterSecondProgressBar.value = hero1.health;
-      else
-      fighterOneProgressBar.value = hero1.health;
-      }
-      console.log(hero1.name+" : "+hero1.health);
-  if(hero1.health<1||hero2.health<1){
-      for(let i=0; i<100; i++){
-  window.clearInterval(i); 
-  }
-  if(hero1.health>hero2.health)
-  showWinner(hero1.name);
-  else
-  showWinner(hero2.name);
-
-}
-function showWinner(name:string){
-    let winner_text = document.getElementsByClassName('winner-text')[0] as HTMLHeadingElement;
-    let backBtn = document.getElementsByClassName('backBtn')[0] as HTMLButtonElement;
-  if(document.getElementsByClassName('fighter')[1].children[2].innerHTML==name){
-      document.getElementsByClassName('fighter')[0].remove();
-  }
-  else{
-      document.getElementsByClassName('fighter')[1].remove();
-  }
-  winner_text.style.display="block";
-  winner_text.innerHTML = name + "'s victory";
-  backBtn.style.display="block";
-  backBtn.innerHTML="Back to hero menu"
-}  
 }
 
 

@@ -1,36 +1,37 @@
 import View from './view';
 
-export interface IFighterView{
-    createFighter: ()=> void;
-    createName: ()=>any;
-    createImage: ()=>any;
 
-
+export interface IFighterUndetailed{
+  _id:number;
+  name: string;
+  source:string;
 }
 
 class FighterView extends View {
-  constructor(fighter:{_id:number, name:string, source: string}, handleClick:any) {
+  element!: HTMLElement;
+  constructor(fighter:IFighterUndetailed, handleClick:any) {
     super();
 
     this.createFighter(fighter, handleClick);
   }
 
-  createFighter(fighter:{_id:number, name:string, source: string}, handleClick:any) {
+  private createFighter(fighter:IFighterUndetailed, handleClick:any) {
     const { name, source } = fighter;
     const nameElement = this.createName(name);
     const imageElement = this.createImage(source);
     this.element = this.createElement({ tagName: 'div', className: 'fighter',attributes:{} });
-    this.element.append(imageElement, nameElement);
-    this.element.addEventListener('click', (event: EventTarget) => handleClick(event, fighter), false);
+    this.element.appendChild(imageElement);
+    this.element.appendChild(nameElement);
+    this.element.addEventListener('click', event => handleClick(event, fighter), false);
   }
 
-  createName(name:string) {
+  private createName(name:string):HTMLSpanElement {
     const nameElement = this.createElement({ tagName: 'span', className: 'name',attributes:{} });
     nameElement.innerText = name;
     return nameElement;
   }
 
-  createImage(source:string) {
+  private createImage(source:string):HTMLImageElement {
     const attributes = { src: source };
     const imgElement = this.createElement({
       tagName: 'img',
